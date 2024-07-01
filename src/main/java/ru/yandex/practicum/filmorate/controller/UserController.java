@@ -24,7 +24,7 @@ public class UserController {
 
     private void validateUniqueness(User user) {
         for (User existedUser : users.values()) {
-            if (user.getEmail().equals(existedUser.getEmail())) {
+            if (user.equals(existedUser)) {
                 throw new ValidationException("email уже используется.");
             }
         }

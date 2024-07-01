@@ -24,7 +24,7 @@ public class FilmController {
 
     private void validateUniqueness(Film film) {
         for (Film existedFilm : films.values()) {
-            if (film.getName().equals(existedFilm.getName())) {
+            if (film.equals(existedFilm)) {
                 throw new ValidationException("Такой фильм уже существует.");
             }
         }
