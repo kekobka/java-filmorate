@@ -16,7 +16,6 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
-    private final Map<Integer, Film> filmsHashcode = new HashMap<>();
     private long seq = 0;
 
     private long generateId() {
@@ -24,8 +23,10 @@ public class FilmController {
     }
 
     private void validateUniqueness(Film film) {
-        if (filmsHashcode.containsKey(film.hashCode())) {
-            throw new ValidationException("Такой фильм уже существует.");
+        for (Film existedFilm : films.values()) {
+            if (film.getName().equals(existedFilm.getName())) {
+                throw new ValidationException("Такой фильм уже существует.");
+            }
         }
     }
 
@@ -33,7 +34,6 @@ public class FilmController {
         validateUniqueness(film);
         film.setId(generateId());
         films.put(film.getId(), film);
-        filmsHashcode.put(film.hashCode(), film);
     }
 
     private void updateFilm(Film film, Film oldFilm) {

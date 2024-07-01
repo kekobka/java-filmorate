@@ -16,7 +16,6 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
-    private final Map<Integer, User> usersHashcode = new HashMap<>();
     private long seq = 0;
 
     private long generateId() {
@@ -24,8 +23,10 @@ public class UserController {
     }
 
     private void validateUniqueness(User user) {
-        if (usersHashcode.containsKey(user.hashCode())) {
-            throw new ValidationException("email уже используется.");
+        for (User existedUser : users.values()) {
+            if (user.getEmail().equals(existedUser.getEmail())) {
+                throw new ValidationException("email уже используется.");
+            }
         }
     }
 
@@ -42,7 +43,6 @@ public class UserController {
         }
         user.setId(generateId());
         users.put(user.getId(), user);
-        usersHashcode.put(user.hashCode(), user);
     }
 
     @PostMapping
