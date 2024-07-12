@@ -16,21 +16,21 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(final NotFoundException e) {
-        log.info("Not found: {}", e.getMessage());
+        log.debug("Not found: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final Exception e) {
-        log.trace("Error", e);
+        log.debug("Error", e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationException handleValidationException(final MethodArgumentNotValidException e) {
-        log.trace("Error", e);
+        log.debug("Error", e);
         return new ValidationException(e.getMessage());
     }
 }
