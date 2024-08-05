@@ -27,10 +27,10 @@
 + DELETE /users/{id}/friends/{friendId} - Remove a user from friends
 
 
-#### Популярные фильмы
+#### Popular
 
-+ GET /films/popular?count={limit}&genreId={genreId}&year={year} - Получить самые популярные фильмы по жанру и годам
++ GET /films/popular?count={limit} - Get the most popular movies
 
-## ER диаграмма
+## ER-Diagram
 
 ![Filmorate](./sql_schema.png)
