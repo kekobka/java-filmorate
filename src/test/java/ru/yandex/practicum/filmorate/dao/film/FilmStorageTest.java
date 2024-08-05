@@ -92,7 +92,7 @@ public class FilmStorageTest {
                 .email("login@yandex.ru")
                 .birthday(LocalDate.of(1999, 12, 21))
                 .build();
-        
+
         userStorage.save(user);
 
         filmStorage.addLike(1, 1);
