@@ -1,28 +1,28 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.dao.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.*;
 
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
-    private final Map<Long, Set<Long>> filmLikes = new HashMap<>();
-    private long seq = 0;
+    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
+    private int seq = 0;
 
-    private long generateId() {
+    private int generateId() {
         return ++seq;
     }
 
     @Override
-    public Optional<Film> get(long id) {
+    public Optional<Film> getById(int id) {
         return Optional.ofNullable(films.get(id));
     }
 
     @Override
-    public boolean contains(long id) {
+    public boolean contains(int id) {
         return films.containsKey(id);
     }
 
@@ -65,13 +65,14 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(long filmId, long userId) {
-        Set<Long> usersLikes = filmLikes.computeIfAbsent(filmId, k -> new HashSet<>());
+    public void addLike(int filmId, int userId) {
+
+        Set<Integer> usersLikes = filmLikes.computeIfAbsent(filmId, k -> new HashSet<>());
         usersLikes.add(userId);
     }
 
     @Override
-    public void deleteLike(long filmId, long userId) {
+    public void deleteLike(int filmId, int userId) {
         if (!filmLikes.containsKey(filmId)) {
             throw new NotFoundException(String.format("film %d not found", filmId));
         }
