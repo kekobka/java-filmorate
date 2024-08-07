@@ -96,13 +96,13 @@ public class FilmStorageTest {
         userStorage.save(user);
 
         filmStorage.addLike(1, 1);
-        Assertions.assertEquals(1, filmStorage.getById(1).get().getLikes().size());
+        Assertions.assertEquals(1, filmStorage.getById(1).getLikes().size());
     }
 
     @Test
     @Order(5)
     void removeLikeTest() {
         filmStorage.deleteLike(1, 1);
-        Assertions.assertEquals(0, filmStorage.getById(1).get().getLikes().size());
+        Assertions.assertEquals(0, filmStorage.getById(1).getLikes().size());
     }
 }

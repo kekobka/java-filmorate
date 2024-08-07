@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.user.User;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Repository("userDbStorage")
 @Slf4j
@@ -28,7 +27,8 @@ public class UserDbStorage implements UserStorage {
         this.friendStatusRowMapper = friendStatusRowMapper;
     }
 
-    private User getByIdInternal(long id) {
+    @Override
+    public User getById(int id) {
         try {
             User result = jdbc.queryForObject("SELECT * FROM users WHERE user_id = ?;", userRowMapper, id);
             List<Integer> friendsIds = jdbc.queryForList("SELECT other_user_id FROM friends WHERE user_id = ?;", Integer.class, id);
@@ -41,13 +41,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getById(int id) {
-        return Optional.of(getByIdInternal(id));
-    }
-
-    @Override
     public boolean contains(int id) {
-        return getById(id).isPresent();
+        try {
+            return getById(id) != null;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 
     @Override
@@ -77,11 +76,14 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
-
     @Override
     public User update(User user) {
+
+        if (!contains(user.getId())) {
+            throw new NotFoundException(String.format("user: %d not found", user.getId())); // Ensure user exists
+        }
+
         try {
-            getByIdInternal(user.getId());
             int updatedRow = jdbc.update("UPDATE users SET birthday = ?, name = ?, login = ?, email = ? WHERE user_id = ?;", user.getBirthday(), user.getName(), user.getLogin(), user.getEmail(), user.getId());
             if (updatedRow == 0) {
                 throw new InternalErrorException("update failed");
@@ -96,8 +98,14 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addFriend(int userId, int friendId) {
         try {
-            getByIdInternal(userId); // Ensure user exists
-            getByIdInternal(friendId); // Ensure user exists
+            if (!contains(userId)) {
+                throw new NotFoundException(String.format("user: %d not found", userId)); // Ensure user exists
+            }
+
+            if (!contains(friendId)) {
+                throw new NotFoundException(String.format("user: %d not found", friendId)); // Ensure user exists
+            }
+
             jdbc.update("INSERT INTO friends (user_id, other_user_id) VALUES (?, ?)", userId, friendId);
         } catch (EmptyResultDataAccessException e) {
             throw new InternalErrorException("Add friend failed: " + e.getMessage());
@@ -107,8 +115,14 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void deleteFriend(int userId, int friendId) {
         try {
-            getByIdInternal(userId); // Ensure user exists
-            getByIdInternal(friendId); // Ensure user exists
+            if (!contains(userId)) {
+                throw new NotFoundException(String.format("user: %d not found", userId)); // Ensure user exists
+            }
+
+            if (!contains(friendId)) {
+                throw new NotFoundException(String.format("user: %d not found", friendId)); // Ensure user exists
+            }
+
             jdbc.update("DELETE FROM friends WHERE user_id = ? AND other_user_id = ?;", userId, friendId);
         } catch (EmptyResultDataAccessException e) {
             throw new InternalErrorException("add friend failed");
@@ -124,19 +138,22 @@ public class UserDbStorage implements UserStorage {
     }
 
     public List<User> getFriends(int userId) {
-        getByIdInternal(userId);
+        if (!contains(userId)) {
+            throw new NotFoundException(String.format("user: %d not found", userId)); // Ensure user exists
+        }
+
         List<FriendStatus> friendsIds = getUserFriends(userId);
-        return friendsIds.stream().map(friendStatus -> getByIdInternal(friendStatus.getFriendId())).toList();
+        return friendsIds.stream().map(friendStatus -> getById(friendStatus.getFriendId())).toList();
     }
 
     @Override
     public List<User> getCommonFriends(int userId, int otherUserId) {
         List<User> userFriends = getUserFriends(userId).stream()
-                .map(friendStatus -> getByIdInternal(friendStatus.getFriendId()))
+                .map(friendStatus -> getById(friendStatus.getFriendId()))
                 .toList();
 
         List<User> otherUserFriends = getUserFriends(otherUserId).stream()
-                .map(friendStatus -> getByIdInternal(friendStatus.getFriendId()))
+                .map(friendStatus -> getById(friendStatus.getFriendId()))
                 .toList();
 
         return userFriends.stream()

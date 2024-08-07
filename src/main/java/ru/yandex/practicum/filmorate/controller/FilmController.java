@@ -4,13 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -24,7 +22,7 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Film> getById(@PathVariable @Positive int id) {
+    public Film getById(@PathVariable @Positive int id) {
         return filmService.getById(id);
     }
 
@@ -35,7 +33,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Validated @RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
         return filmService.update(film);
     }
 

@@ -26,7 +26,7 @@ public class UserStorageTest {
         User expectedUser = User.builder().id(5).name("name").login("login").email("login@yandex.ru").birthday(LocalDate.of(1999, 12, 21)).build();
 
         User newUser = userStorage.save(user);
-        Assertions.assertEquals(expectedUser, userStorage.getById(newUser.getId()).get());
+        Assertions.assertEquals(expectedUser, userStorage.getById(newUser.getId()));
     }
 
     @Test
@@ -54,7 +54,7 @@ public class UserStorageTest {
         userStorage.save(user2);
 
         userStorage.addFriend(3, 4);
-        Assertions.assertEquals(1, userStorage.getById(3).get().getFriends().size());
+        Assertions.assertEquals(1, userStorage.getById(3).getFriends().size());
     }
 
     @Test

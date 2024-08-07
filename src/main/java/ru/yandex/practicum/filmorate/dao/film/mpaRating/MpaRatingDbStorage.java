@@ -31,4 +31,12 @@ public class MpaRatingDbStorage {
             throw new NotFoundException(String.format("mpa rating %d not found", id));
         }
     }
+
+    public boolean contains(int id) {
+        try {
+            return getById(id) != null;
+        } catch (NotFoundException e) {
+            return false;
+        }
+    }
 }

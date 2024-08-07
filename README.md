@@ -26,7 +26,6 @@
 + PUT /users/{id}/friends/{friendId} - Add a user as a friend
 + DELETE /users/{id}/friends/{friendId} - Remove a user from friends
 
-
 #### Popular
 
 + GET /films/popular?count={limit} - Get the most popular movies

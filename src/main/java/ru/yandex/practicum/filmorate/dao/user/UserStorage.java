@@ -3,11 +3,10 @@ package ru.yandex.practicum.filmorate.dao.user;
 import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserStorage {
 
-    Optional<User> getById(int id);
+    User getById(int id);
 
     boolean contains(int id);
 

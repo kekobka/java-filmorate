@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,7 +28,7 @@ public class UserService {
         return userStorage.getAll();
     }
 
-    public Optional<User> getById(int id) {
+    public User getById(int id) {
         log.info("GET /users/{}", id);
         return userStorage.getById(id);
     }

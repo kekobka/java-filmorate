@@ -17,8 +17,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getById(int id) {
-        return Optional.ofNullable(users.get(id));
+    public User getById(int id) {
+        if (!contains(id)) {
+            throw new NotFoundException(String.format("user %d not found", id));
+        }
+        return users.get(id);
     }
 
     @Override

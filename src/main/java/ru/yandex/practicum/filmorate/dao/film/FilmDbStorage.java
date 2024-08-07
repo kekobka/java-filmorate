@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.film.genre.GenreRowMapper;
 import ru.yandex.practicum.filmorate.dao.film.mpaRating.MpaRatingRowMapper;
+import ru.yandex.practicum.filmorate.dao.user.UserRowMapper;
 import ru.yandex.practicum.filmorate.exception.InternalErrorException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.WrongArgumentException;
@@ -15,8 +16,6 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Like;
 import ru.yandex.practicum.filmorate.model.film.MpaRating;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.*;
 import java.util.function.Function;
@@ -27,24 +26,22 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbc;
-    private final UserService userService;
-    private final GenreService genreService;
+    private final UserRowMapper userRowMapper;
     private final FilmRowMapper filmRowMapper;
     private final MpaRatingRowMapper mpaRatingRowMapper;
     private final GenreRowMapper genreRowMapper;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbc, UserService userService, GenreService genreService, FilmRowMapper filmRowMapper, MpaRatingRowMapper ratingRowMapper, GenreRowMapper genreRowMapper) {
+    public FilmDbStorage(JdbcTemplate jdbc, UserRowMapper userRowMapper, FilmRowMapper filmRowMapper, MpaRatingRowMapper ratingRowMapper, GenreRowMapper genreRowMapper) {
         this.jdbc = jdbc;
-        this.userService = userService;
-        this.genreService = genreService;
+        this.userRowMapper = userRowMapper;
         this.filmRowMapper = filmRowMapper;
         this.mpaRatingRowMapper = ratingRowMapper;
         this.genreRowMapper = genreRowMapper;
     }
 
     @Override
-    public Optional<Film> getById(int filmId) {
+    public Film getById(int filmId) {
         try {
             Film film = jdbc.queryForObject("SELECT * FROM films WHERE film_id = ?", filmRowMapper, filmId);
             assert film != null;
@@ -53,7 +50,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setLikes(new HashSet<>(jdbc.queryForList("SELECT user_id FROM film_likes WHERE film_id = ?", Integer.class, filmId)));
             film.setGenres(new TreeSet<>(jdbc.query("SELECT g.* FROM genre AS g INNER JOIN film_genre fg ON g.genre_id = fg.genre_id WHERE fg.film_id = ?",
                     genreRowMapper, filmId)));
-            return Optional.of(film);
+            return film;
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundException(String.format("film %d not found", filmId));
         }
@@ -61,7 +58,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public boolean contains(int id) {
-        return false;
+        try {
+            return getById(id) != null;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 
     @Override
@@ -120,7 +121,7 @@ public class FilmDbStorage implements FilmStorage {
             SimpleJdbcInsert insertGenres = new SimpleJdbcInsert(jdbc).withTableName("film_genre");
 
             for (Genre genre : genres) {
-                genreService.getById(genre.getId());
+
                 Map<String, Object> genreMap = new HashMap<>();
                 genreMap.put("film_id", id);
                 genreMap.put("genre_id", genre.getId());
@@ -158,8 +159,17 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void addLike(int filmId, int userId) {
         try {
-            getById(filmId);
-            userService.getById(userId);
+
+            if (!contains(filmId)) {
+                throw new NotFoundException(String.format("film %d not found", filmId));
+            }
+
+            try {
+                jdbc.queryForObject("SELECT * FROM users WHERE user_id = ?;", userRowMapper, userId);
+            } catch (EmptyResultDataAccessException e) {
+                throw new NotFoundException(String.format("user: %d not found", userId));
+            }
+
             SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbc).withTableName("film_likes");
             int updated = simpleJdbcInsert.execute(Like.builder().filmId(filmId).userId(userId).build().toMap());
 
@@ -174,8 +184,17 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public void deleteLike(int filmId, int userId) {
         try {
-            getById(filmId);
-            userService.getById(userId);
+
+            if (!contains(filmId)) {
+                throw new NotFoundException(String.format("film %d not found", filmId));
+            }
+
+            try {
+                jdbc.queryForObject("SELECT * FROM users WHERE user_id = ?;", userRowMapper, userId);
+            } catch (EmptyResultDataAccessException e) {
+                throw new NotFoundException(String.format("user: %d not found", userId));
+            }
+
             jdbc.update("DELETE FROM film_likes WHERE film_id = ? AND user_id = ?", filmId, userId);
         } catch (EmptyResultDataAccessException e) {
             throw new InternalErrorException("update failed");

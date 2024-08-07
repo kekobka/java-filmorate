@@ -32,4 +32,12 @@ public class GenreDbStorage {
         }
     }
 
+    public boolean contains(long id) {
+        try {
+            return getById(id) != null;
+        } catch (NotFoundException e) {
+            return false;
+        }
+    }
+
 }

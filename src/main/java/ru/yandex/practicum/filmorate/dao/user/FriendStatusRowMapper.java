@@ -12,8 +12,8 @@ public class FriendStatusRowMapper implements RowMapper<FriendStatus> {
     @Override
     public FriendStatus mapRow(ResultSet rs, int rowNum) throws SQLException {
         return FriendStatus.builder()
-                .userId(rs.getLong("user_id"))
-                .friendId(rs.getLong("other_user_id"))
+                .userId(rs.getInt("user_id"))
+                .friendId(rs.getInt("other_user_id"))
                 .build();
     }
 }

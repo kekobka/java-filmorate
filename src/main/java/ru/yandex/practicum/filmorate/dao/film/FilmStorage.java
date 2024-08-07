@@ -3,11 +3,10 @@ package ru.yandex.practicum.filmorate.dao.film;
 import ru.yandex.practicum.filmorate.model.film.Film;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface FilmStorage {
 
-    Optional<Film> getById(int id);
+    Film getById(int id);
 
     boolean contains(int id);
 
