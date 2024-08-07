@@ -1,28 +1,31 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.dao.user;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.*;
 
-@Component
+@Component("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Long, User> users = new HashMap<>();
-    private final Map<Long, Set<Long>> userFriends = new HashMap<>();
-    private long seq = 0;
+    private final Map<Integer, User> users = new HashMap<>();
+    private final Map<Integer, Set<Integer>> userFriends = new HashMap<>();
+    private int seq = 0;
 
-    private long generateId() {
+    private int generateId() {
         return ++seq;
     }
 
     @Override
-    public Optional<User> get(long id) {
-        return Optional.ofNullable(users.get(id));
+    public User getById(int id) {
+        if (!contains(id)) {
+            throw new NotFoundException(String.format("user %d not found", id));
+        }
+        return users.get(id);
     }
 
     @Override
-    public boolean contains(long id) {
+    public boolean contains(int id) {
         return users.containsKey(id);
     }
 
@@ -68,16 +71,16 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(long userId, long friendId) {
-        Set<Long> user1Friends = userFriends.computeIfAbsent(userId, k -> new HashSet<>());
+    public void addFriend(int userId, int friendId) {
+        Set<Integer> user1Friends = userFriends.computeIfAbsent(userId, k -> new HashSet<>());
         user1Friends.add(friendId);
 
-        Set<Long> user2Friends = userFriends.computeIfAbsent(friendId, k -> new HashSet<>());
+        Set<Integer> user2Friends = userFriends.computeIfAbsent(friendId, k -> new HashSet<>());
         user2Friends.add(userId);
     }
 
     @Override
-    public void deleteFriend(long userId, long friendId) {
+    public void deleteFriend(int userId, int friendId) {
         if (!users.containsKey(userId)) {
             throw new NotFoundException(String.format("user %d not found", userId));
         }
@@ -93,7 +96,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getFriends(long userId) {
+    public List<User> getFriends(int userId) {
         if (!userFriends.containsKey(userId)) {
             return List.of();
         }
@@ -102,10 +105,10 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getCommonFriends(long userId, long otherUserId) {
-        Set<Long> userFriends = this.userFriends.getOrDefault(userId, new HashSet<>());
-        Set<Long> otherUserFriends = this.userFriends.getOrDefault(otherUserId, new HashSet<>());
-        Set<Long> commonFriends = new HashSet<>(userFriends);
+    public List<User> getCommonFriends(int userId, int otherUserId) {
+        Set<Integer> userFriends = this.userFriends.getOrDefault(userId, new HashSet<>());
+        Set<Integer> otherUserFriends = this.userFriends.getOrDefault(otherUserId, new HashSet<>());
+        Set<Integer> commonFriends = new HashSet<>(userFriends);
         commonFriends.retainAll(otherUserFriends);
         return commonFriends.stream().map(users::get).toList();
     }

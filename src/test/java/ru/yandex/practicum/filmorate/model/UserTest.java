@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -27,13 +28,13 @@ class UserTest {
     }
 
     static User getUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setLogin("login_test");
-        user.setEmail("test@test.com");
-        user.setName("test");
-        user.setBirthday(LocalDate.of(2024, 1, 1));
-        return user;
+        return User.builder()
+                .id(1)
+                .login("login_test")
+                .email("test@test.com")
+                .name("test")
+                .birthday(LocalDate.of(2024, 1, 1))
+                .build();
     }
 
     @Test
