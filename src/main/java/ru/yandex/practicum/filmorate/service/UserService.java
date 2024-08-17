@@ -1,19 +1,22 @@
-package ru.yandex.practicum.filmorate.service.user;
+package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.user.UserStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
+
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public User save(User user) {
         log.info("POST /users => {}", user);
@@ -25,6 +28,11 @@ public class UserService {
         return userStorage.getAll();
     }
 
+    public User getById(int id) {
+        log.info("GET /users/{}", id);
+        return userStorage.getById(id);
+    }
+
     public User update(User user) {
         log.info("PUT /users => {}", user);
         if (!userStorage.contains(user.getId())) {
@@ -33,7 +41,7 @@ public class UserService {
         return userStorage.update(user);
     }
 
-    public void addFriend(long userId, long friendId) {
+    public void addFriend(int userId, int friendId) {
         log.info("PUT /users/{}/friends/{}", userId, friendId);
 
         if (!userStorage.contains(userId)) {
@@ -46,7 +54,7 @@ public class UserService {
 
     }
 
-    public void deleteFriend(long userId, long friendId) {
+    public void deleteFriend(int userId, int friendId) {
         log.info("DELETE /users/{}/friends/{}", userId, friendId);
         if (!userStorage.contains(userId)) {
             throw new NotFoundException(String.format("user: %d not found", userId));
@@ -57,7 +65,7 @@ public class UserService {
         userStorage.deleteFriend(userId, friendId);
     }
 
-    public List<User> getCommonFriends(long userId, long otherUserId) {
+    public List<User> getCommonFriends(int userId, int otherUserId) {
         log.info("GET /users/{}/friends/common/{}", userId, otherUserId);
         if (!userStorage.contains(userId)) {
             throw new NotFoundException(String.format("user: %d not found", userId));
@@ -68,7 +76,7 @@ public class UserService {
         return userStorage.getCommonFriends(userId, otherUserId);
     }
 
-    public List<User> getFriends(Long userId) {
+    public List<User> getFriends(Integer userId) {
         log.info("GET /users/{}/friends", userId);
         if (!userStorage.contains(userId)) {
             throw new NotFoundException(String.format("user: %d not found", userId));

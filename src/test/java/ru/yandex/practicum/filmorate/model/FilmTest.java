@@ -10,6 +10,8 @@ import jakarta.validation.constraints.Size;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.annotation.DateAfter;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.MpaRating;
 
 import java.time.LocalDate;
 import java.util.Set;
@@ -27,12 +29,14 @@ class FilmTest {
     }
 
     static Film getFilm() {
-        Film film = new Film();
-        film.setName("test");
-        film.setReleaseDate(LocalDate.now());
-        film.setDuration(1L);
-        film.setId(1L);
-        return film;
+        return Film.builder()
+                .id(1)
+                .name("test")
+                .duration(1L)
+                .releaseDate(LocalDate.now())
+                .description("desc")
+                .mpa(new MpaRating(1, "G"))
+                .build();
     }
 
     @Test
@@ -86,6 +90,7 @@ class FilmTest {
         film.setReleaseDate(LocalDate.of(1895, 12, 29));
 
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        System.out.println(violations.toString());
         assertTrue(violations.isEmpty());
     }
 
